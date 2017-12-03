@@ -1,0 +1,10 @@
+#compiled files
+*.pyc
+part_1/*.pyc
+part_2/*.pyc
+
+#part 1 test and training should never change:
+part_1/testlabels
+part_1/testimages
+part_1/traininglabels
+part_1/trainingimages
