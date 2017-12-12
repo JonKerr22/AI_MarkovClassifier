@@ -26,7 +26,7 @@ def between(a,b,x):
 sign = lambda x: math.copysign(1, x)
 
 """
-Does not account for case where the ball would have bounced off the wall
+Does not account for case where the ball would have bounced off the wall. Fudges the numbers a little instead, making it almost strictly harder
 """
 def intersection(start_pos,velocity,x):
 	end_pos = [sum(pair) for pair in zip(start_pos,velocity)]
@@ -34,14 +34,15 @@ def intersection(start_pos,velocity,x):
 		assert 1==2
 	if not between(start_pos[0],end_pos[0],x):
 		return False, None, None
+    
 	t=(end_pos[0]-start_pos[0])/float(velocity[0])
 	intersect = end_pos[1]+t*velocity[1]
 
-	return True, end_pos[0], intersect
+	return True, end_pos[0], clamp(0,SCREEN_SIZE[1],intersect)
 
 
 class Paddle:
-	def __init__(self, position, height, is_left=False):
+	def __init__(self, position, height, is_left=False, is_wall = False):
 		self.position = list(position)
 		self.height = height
 		self.rect = pygame.Rect(*self.position, 12,self.height)
@@ -121,7 +122,8 @@ class AI:
 		self.gamma = .6
 		self.C = 10
 		self.player_index = player_index
-		
+		self.grid_size = 12
+        
 		self.qmatrix = defaultdict(vector3)
 		self.nmatrix = defaultdict(vector3)
 		self.states_since_last_bounce = []
@@ -138,14 +140,14 @@ class AI:
 	def interpret_state(self,pong):
 		self.prev_state = self.state
 		self.state = [0,0,0,0,0]
-		self.state[0] = int(pong.ball.position[0]/SCREEN_SIZE[0]*12)
-		self.state[1] = int(pong.ball.position[1]/SCREEN_SIZE[1]*12)
+		self.state[0] = int(pong.ball.position[0]/SCREEN_SIZE[0]*self.grid_size)
+		self.state[1] = int(pong.ball.position[1]/SCREEN_SIZE[1]*self.grid_size)
 		self.state[2] = sign(pong.ball.velocity[0])
 		if abs(pong.ball.velocity[1]) < .015*SCREEN_SIZE[1]:
 			self.state[3] = 0
 		else:
 			self.state[3] = sign(pong.ball.velocity[1])
-		self.state[4] = int((pong.players[self.player_index].position[1])/SCREEN_SIZE[1]*12) 
+		self.state[4] = int((pong.players[self.player_index].position[1])/SCREEN_SIZE[1]*self.grid_size) 
 		self.state = tuple(self.state)
 
 	def choose_action(self):
@@ -189,7 +191,7 @@ class Pong:
 		self.mode = "CHANGE SPEED"
 		self.training = True
 		self.human = human
-
+        
 		self.init_game()
 		self.running = True
 		self.headless = headless
@@ -325,6 +327,7 @@ if __name__ == "__main__":
 	training.AI.gamma = .9
 	training.AI.alpha = .8
 	training.AI.C = 100
+    #training.AI.grid_size=14
 	#training.AI.decay_period = 5000
 	scores, ai = training.run(100000)
 	print("Training finished")
