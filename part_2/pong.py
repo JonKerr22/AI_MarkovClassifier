@@ -327,7 +327,7 @@ if __name__ == "__main__":
 	training.AI.gamma = .9
 	training.AI.alpha = .8
 	training.AI.C = 100
-    #training.AI.grid_size=14
+	training.AI.grid_size=14
 	#training.AI.decay_period = 5000
 	scores, ai = training.run(100000)
 	print("Training finished")
